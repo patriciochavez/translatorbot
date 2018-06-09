@@ -1,0 +1,170 @@
+<!DOCTYPE html> 
+<html> 
+<head> 
+<meta charset=UTF-8> 
+<meta name=viewport content="width=device-width,initial-scale=1"> 
+<title>Demo uso de API HTML5 (web speech)
+</title> 
+<style>*
+         {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+         }
+
+         body
+         {
+            max-width: 500px;
+            margin: 2em auto;
+            padding: 0 0.5em;
+            font-size: 20px;
+         }
+
+         h1
+         {
+            text-align: center;
+         }
+
+         .buttons-wrapper
+         {
+            text-align: center;
+         }
+
+         .api-support
+         {
+            display: block;
+         }
+
+         .hidden
+         {
+            display: none;
+         }
+         
+         #transcription,
+         #log
+         {
+            display: block;
+            width: 100%;
+            height: 5em;
+            overflow-y: scroll;
+            border: 1px solid #333333;
+            line-height: 1.3em;
+         }
+
+         .button-demo
+         {
+            padding: 0.5em;
+            display: inline-block;
+            margin: 1em auto;
+         }
+
+         .author
+         {
+            display: block;
+            margin-top: 1em;
+         }</style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script> 
+	</head> 
+		<body> 
+		<h1>Web Speech API</h1> <span id=ws-unsupported class="api-support hidden">API no soportada</span> 
+		<h2>Texto detectado</h2> <textarea id=transcription readonly></textarea>
+
+		<div id='oculto' style='display:none'><label><input type=radio name=recognition-type value=final checked> Finalizado solamente</label> <label><input type=radio name=recognition-type value=interim> Intermedio</label> </div>
+
+		<h3>Log</h3> <div id=log></div> <div class=buttons-wrapper>
+		 <button id=button-play-ws class=button-demo>Comenzar</button>
+		 <button id=button-stop-ws class=button-demo>Finalizar</button>
+		 <button id=clear-all class=button-demo>Borrar</button> </div> 
+	<script>// Test browser support
+	var pending = true;
+	
+	function speak(text) {
+	// Create a new instance of SpeechSynthesisUtterance.
+        var msg = new SpeechSynthesisUtterance();
+
+  	// Set the text.
+        msg.text = text;
+
+        //msg.voice = "Google español";
+
+  	// Queue this utterance.
+        window.speechSynthesis.speak(msg);
+}
+         window.SpeechRecognition = window.SpeechRecognition        ||
+                                    window.webkitSpeechRecognition  ||
+                                    null;
+         if (window.SpeechRecognition === null) {
+            document.getElementById('ws-unsupported').classList.remove('hidden');
+            document.getElementById('button-play-ws').setAttribute('disabled', 'disabled');
+            document.getElementById('button-stop-ws').setAttribute('disabled', 'disabled');
+         } else {
+            var recognizer = new window.SpeechRecognition();
+            var transcription = document.getElementById('transcription');
+            var log = document.getElementById('log');
+
+            // Recogniser doesn't stop listening even if the user pauses
+            recognizer.continuous = true;
+            // Start recognising
+            recognizer.onresult = function(event) {
+               transcription.textContent = '';
+               for (var i = event.resultIndex; i < event.results.length; i++) {
+                  if (event.results[i].isFinal) {
+                     transcription.textContent = event.results[i][0].transcript;
+                     log.innerHTML = 'Confianza: ' + event.results[i][0].confidence;	
+                  } else {
+                     transcription.textContent += event.results[i][0].transcript;
+                  }
+               }
+		if (pending){
+		$(function() {
+			var params = {
+	        	    // Request parameters
+		        };
+      
+	        $.ajax({
+	            url: "https://200.32.43.13/chatbot" + $.param(params),
+	            beforeSend: function(xhrObj){
+        	        // Request headers
+                	//xhrObj.setRequestHeader("Content-Type","application/json");
+        	    },
+	            type: "POST",
+	            // Request body
+	        data: "message=" + transcription.value,
+		        })
+	        .done(function(data) {
+		      speak(data);
+        		})
+	        .fail(function() {
+	            alert("error");
+        		});
+		    });
+		pending = false;
+		}
+            };
+            // Listen for errors
+            recognizer.onerror = function(event) {
+               log.innerHTML = 'Error: ' + event.message + '<br />';
+            };
+
+            document.getElementById('button-play-ws').addEventListener('click', function() {
+		pending = true;
+               // Set if we need interim results
+               recognizer.interimResults = document.querySelector('input[name="recognition-type"][value="interim"]').checked;
+               try{
+                  recognizer.start();
+                  log.innerHTML = 'Reconociendo' + '<br />';
+               } catch(ex) {
+                  log.innerHTML = 'error: ' + ex.message + '<br />';
+               }
+            });
+            document.getElementById('button-stop-ws').addEventListener('click', function() {
+               recognizer.stop();
+               log.innerHTML = 'Finalizado' + '<br />';
+            });
+            document.getElementById('clear-all').addEventListener('click', function() {
+               transcription.textContent = '';
+               log.textContent = '';
+            });
+         }</script>	
+
+ </body> </html>
