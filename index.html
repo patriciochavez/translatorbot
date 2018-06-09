@@ -76,6 +76,7 @@
 		 <button id=button-stop-ws class=button-demo>Finalizar</button>
 		 <button id=clear-all class=button-demo>Borrar</button> </div> 
 	<script>// Test browser support
+	var lang = "es-ES";
 	var pending = true;
 	
 	function speak(text) {
@@ -86,6 +87,8 @@
         msg.text = text;
 
         //msg.voice = "Google español";
+
+	msg.lang = lang;
 
   	// Queue this utterance.
         window.speechSynthesis.speak(msg);
@@ -115,12 +118,33 @@
                      transcription.textContent += event.results[i][0].transcript;
                   }
                }
+
 		if (pending){
-		$(function() {
-			var params = {
-	        	    // Request parameters
-		        };
+                $(function() {
+                        var params = {
+                            // Request parameters
+                        };
+
+		$.ajax({url: "https://200.32.43.13/lang" + $.param(params),
+		beforeSend: function(xhrObj){
+       		     	},
+              	  type: "GET",
+                    // Request body
+         	  data: "",
+                       })
+                  .done(function(data) {
+                      lang = data;
+                        })
+                  .fail(function() {
+                    //alert("error");
+                        });
+		    });
       
+                $(function() {
+                        var params = {
+                            // Request parameters
+                        };
+
 	        $.ajax({
 	            url: "https://200.32.43.13/chatbot" + $.param(params),
 	            beforeSend: function(xhrObj){
@@ -135,7 +159,7 @@
 		      speak(data);
         		})
 	        .fail(function() {
-	            alert("error");
+	            //alert("error");
         		});
 		    });
 		pending = false;
@@ -165,6 +189,7 @@
                transcription.textContent = '';
                log.textContent = '';
             });
-         }</script>	
+        };
+</script>	
 
  </body> </html>

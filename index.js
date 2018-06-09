@@ -27,6 +27,7 @@ app.use(bodyParser.urlencoded({
         extended: true
         }));
 
+var lang = "es-ES";
 
 var get_guid = function () {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -40,6 +41,9 @@ app.get(/^(.+)$/, function(req, res){
         case '/prueba.html':
             res.send("prueba ok");
             break;
+	case '/lang':
+	    res.send(lang);
+	    break;
     default: res.sendFile( __dirname + "/index.html"); 
     }
  });
@@ -56,6 +60,7 @@ app.post(/^(.+)$/, function(req, res){
 		 	res.send("24 grados");
 		} else if (received.includes("modo") && received.includes("traductor")) {
 		 	translator = true;	
+			lang = "en-EN";
 			res.send("Modo traductor activado");
 		} else {
 			res.send("Perdón, no entiendo");
